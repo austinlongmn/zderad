@@ -5,8 +5,10 @@ import os
 import tempfile
 import re
 
+from colored import Fore, Style
+
 # This program runs in a directory and creates a Microsoft word document
-# containing any psudocode, python, or other code files in the directory for
+# containing any pseudocode, python, or other code files in the directory for
 # coursework submission.
 
 
@@ -18,21 +20,6 @@ def get_tmp_file():
 def cleanup(tmp_filename):
     "Removes the temporary directory and all files within it."
     os.unlink(tmp_filename)
-
-
-def main_loop(tmp_file, input_file, output_file):
-    "Main loop to process the input file and create the output file."
-    for line in input_file:
-        # Match directives that look like this: ^[directive](path/to/file)
-        regex_match = re.match(r"^\s+\^\[(.+?)\]\((.+?)\)\s+$", line)
-        if regex_match:
-            # This is a Zderadfile directive.
-            directive = regex_match.group(1)
-            filename = regex_match.group(2)
-            perform_directive(directive, filename, tmp_file)
-        else:
-            # This is a normal line.
-            tmp_file.write(line)
 
 
 def include_file(filename, tmp_file):
@@ -49,79 +36,156 @@ directives = {"include": include_file, "output_images": include_output_images}
 
 
 class ZderadfileDirectiveParameters:
-    def __init__(self, directive, args):
+    def __init__(self, directive, args, options):
         self.directive = directive
         self.args = args
+        self.options = options
+
+    def __str__(self):
+        return (
+            "ZderadfileDirectiveParameters(\n"
+            + f"  {self.directive},\n"
+            + f"  {self.args},\n"
+            + f"  {self.options}\n"
+            + f")"
+        )
 
     def __repr__(self):
-        return f"ZderadfileDirectiveParameters({self.directive}, {self.args})"
+        return str(self)
 
     def __eq__(self, value):
         if not isinstance(value, ZderadfileDirectiveParameters):
             return False
-        return self.directive == value.directive and self.args == value.args
+        return (
+            self.directive == value.directive
+            and self.args == value.args
+            and self.options == value.options
+        )
 
 
 class ZderadfileParseError(Exception):
     pass
 
 
-def parse_directive(line):
+def default_raise_diagnostic(message, line):
+    raise ZderadfileParseError(f"Error parsing directive: {message}: {line}")
+
+
+def default_raise_diagnostic_no_ln(message):
+    raise ZderadfileParseError(f"Error parsing directive: {message}")
+
+
+def parse_directive(line, raise_diagnostic=default_raise_diagnostic):
     """Parse the directive and return the directive and filename, along with
     directive arguments."""
     regex_match = re.match(r"^\s*\^\[(.+?)\]\((.+?)\)\s*$", line)
     if regex_match:
-        directive_and_args = regex_match.group(1)
-        filename = regex_match.group(2)
+        options_str = regex_match.group(1)
+        args_str = regex_match.group(2)
 
-        PARSING_DIRECTIVE = 0
-        PARSING_ARG_NAME = 1
-        PARSING_ARG_VALUE = 2
-        parsing_mode = PARSING_DIRECTIVE
-        directive = ""
-        arg_name = ""
-        arg_value = ""
-        args = {}
-        if filename:
-            args["filename"] = filename
-        for ch in directive_and_args:
-            if parsing_mode == PARSING_DIRECTIVE:
-                if ch.isalpha() or ch == "_":
-                    directive += ch
-                elif ch == ",":
-                    parsing_mode = PARSING_ARG_NAME
-                else:
-                    raise ZderadfileParseError(
-                        "Error parsing directive: directive must be alphabetic"
-                        + f'or "_": {line}'
-                    )
-            elif parsing_mode == PARSING_ARG_NAME:
-                if ch.isalpha() or ch == "_":
-                    arg_name += ch
-                elif ch == "=":
-                    parsing_mode = PARSING_ARG_VALUE
-                elif ch == ",":
-                    args[arg_name] = True
-                    arg_name = ""
-                    parsing_mode = PARSING_ARG_NAME
-                else:
-                    raise ZderadfileParseError(
-                        "Error parsing directive: argument name must be"
-                        + f'alphabetic or "_": {line}'
-                    )
-            elif parsing_mode == PARSING_ARG_VALUE:
-                if ch == ",":
-                    args[arg_name] = arg_value
-                    arg_name = ""
-                    arg_value = ""
-                    parsing_mode = PARSING_ARG_NAME
-                else:
-                    arg_value += ch
-        if arg_name:
-            args[arg_name] = arg_value if arg_value != "" else True
-        return ZderadfileDirectiveParameters(directive, args)
+        def raise_diagnostic_no_ln(message):
+            raise_diagnostic(message, line)
+
+        args = parse_directive_args(args_str)
+
+        directive, options = parse_directive_options(
+            options_str, raise_diagnostic
+        )
+
+        return ZderadfileDirectiveParameters(directive, args, options)
     else:
         raise ZderadfileParseError(f"Error parsing directive: {line}")
+
+
+def raise_diagnostic(message, file, line, line_number):
+    raise ZderadfileParseError(
+        f"Error parsing directive: {message} at {file}:{line_number}:\n{line}"
+    )
+
+
+def parse_directive_options(
+    options_str, raise_diagnostic=default_raise_diagnostic_no_ln
+):
+    PARSING_DIRECTIVE = 0
+    PARSING_OPTION_NAME = 1
+    PARSING_OPTION_VALUE = 2
+    parsing_mode = PARSING_DIRECTIVE
+    is_escaped = False
+    directive = ""
+    option_name = ""
+    option_value = ""
+    options = {}
+    for ch in options_str:
+        if parsing_mode == PARSING_DIRECTIVE:
+            if is_escaped:
+                directive += ch
+                is_escaped = False
+            elif ch == "\\":
+                is_escaped = True
+            elif ch.isalpha() or ch == "_":
+                directive += ch
+            elif ch == ",":
+                parsing_mode = PARSING_OPTION_NAME
+            else:
+                raise_diagnostic(
+                    "Directive name must contain only letters and '_'",
+                )
+        elif parsing_mode == PARSING_OPTION_NAME:
+            if is_escaped:
+                option_name += ch
+                is_escaped = False
+            elif ch == "\\":
+                is_escaped = True
+            elif ch.isalpha() or ch == "_":
+                option_name += ch
+            elif ch == "=":
+                parsing_mode = PARSING_OPTION_VALUE
+            elif ch == ",":
+                options[option_name] = True
+                option_name = ""
+                parsing_mode = PARSING_OPTION_NAME
+            else:
+                raise_diagnostic(
+                    "Option name must contain only letters and '_'"
+                )
+        elif parsing_mode == PARSING_OPTION_VALUE:
+            if is_escaped:
+                option_value += ch
+                is_escaped = False
+            elif ch == "\\":
+                is_escaped = True
+            elif ch == ",":
+                options[option_name] = option_value
+                option_name = ""
+                option_value = ""
+                parsing_mode = PARSING_OPTION_NAME
+            else:
+                option_value += ch
+    if option_name:
+        options[option_name] = option_value if option_value != "" else True
+    return directive, options
+
+
+def parse_directive_args(args):
+    if args == "":
+        return {}
+    result = []
+    argument = ""
+    is_escaped = False
+    for ch in args:
+        if is_escaped:
+            argument += ch
+            is_escaped = False
+        if ch == "\\":
+            is_escaped = True
+        if ch == ",":
+            result.append(argument)
+            argument = ""
+        else:
+            argument += ch
+    if argument:
+        result.append(argument)
+    return result
 
 
 def perform_directive(directive, filename, tmp_file):
@@ -130,6 +194,26 @@ def perform_directive(directive, filename, tmp_file):
         directives[directive](filename, tmp_file)
     else:
         raise ValueError(f"Unknown directive: {directive}")
+
+
+def main_loop(tmp_file, input_file, output_file):
+    "Main loop to process the input file and create the output file."
+    for line in input_file:
+        # Match directives that look like this: ^[directive](path/to/file)
+        regex_match = re.match(r"^\s+\^\[(.+?)\]\((.+?)\)\s+$", line)
+        if regex_match:
+            # This is a Zderadfile directive.
+            directive = regex_match.group(1)
+            filename = regex_match.group(2)
+            try:
+                perform_directive(directive, filename, tmp_file)
+            except ZderadfileParseError as e:
+                print(
+                    f"{Fore.RED}Error parsing directive: {e}{Style.RESET_ALL}"
+                )
+        else:
+            # This is a normal line.
+            tmp_file.write(line)
 
 
 def main():
