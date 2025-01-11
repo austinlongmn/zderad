@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
-import shutil
 import os
-import pathlib
 import tempfile
 import re
-import sys
 
 # This program runs in a directory and creates a Microsoft word document
 # containing any psudocode, python, or other code files in the directory for
@@ -70,12 +67,13 @@ class ZderadfileParseError(Exception):
 
 
 def parse_directive(line):
-    "Parse the directive and return the directive and filename, along with directive arguments."
+    """Parse the directive and return the directive and filename, along with
+    directive arguments."""
     regex_match = re.match(r"^\s*\^\[(.+?)\]\((.+?)\)\s*$", line)
     if regex_match:
         directive_and_args = regex_match.group(1)
         filename = regex_match.group(2)
-        
+
         PARSING_DIRECTIVE = 0
         PARSING_ARG_NAME = 1
         PARSING_ARG_VALUE = 2
@@ -94,7 +92,8 @@ def parse_directive(line):
                     parsing_mode = PARSING_ARG_NAME
                 else:
                     raise ZderadfileParseError(
-                        f"Error parsing directive: directive must be alphabetic or \"_\": {line}"
+                        "Error parsing directive: directive must be alphabetic"
+                        + f'or "_": {line}'
                     )
             elif parsing_mode == PARSING_ARG_NAME:
                 if ch.isalpha() or ch == "_":
@@ -107,7 +106,8 @@ def parse_directive(line):
                     parsing_mode = PARSING_ARG_NAME
                 else:
                     raise ZderadfileParseError(
-                        f"Error parsing directive: argument name must be alphabetic or \"_\": {line}"
+                        "Error parsing directive: argument name must be"
+                        + f'alphabetic or "_": {line}'
                     )
             elif parsing_mode == PARSING_ARG_VALUE:
                 if ch == ",":

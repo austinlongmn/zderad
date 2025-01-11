@@ -5,3 +5,7 @@ build
 
 # For testing
 Zderadfile
+
+.vscode
+
+.pytest_cache
