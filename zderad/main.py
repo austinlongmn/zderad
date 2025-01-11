@@ -75,9 +75,11 @@ def parse_directive(line):
     if regex_match:
         directive_and_args = regex_match.group(1)
         filename = regex_match.group(2)
-        parsing_directive = True
-        parsing_arg_name = False
-        parsing_arg_value = False
+        
+        PARSING_DIRECTIVE = 0
+        PARSING_ARG_NAME = 1
+        PARSING_ARG_VALUE = 2
+        parsing_mode = PARSING_DIRECTIVE
         directive = ""
         arg_name = ""
         arg_value = ""
@@ -85,41 +87,34 @@ def parse_directive(line):
         if filename:
             args["filename"] = filename
         for ch in directive_and_args:
-            if parsing_directive:
-                print("parsing directive", ch)
+            if parsing_mode == PARSING_DIRECTIVE:
                 if ch.isalpha() or ch == "_":
                     directive += ch
                 elif ch == ",":
-                    parsing_directive = False
-                    parsing_arg_name = True
+                    parsing_mode = PARSING_ARG_NAME
                 else:
                     raise ZderadfileParseError(
                         f"Error parsing directive: directive must be alphabetic or \"_\": {line}"
                     )
-            elif parsing_arg_name:
-                print("parsing arg name", ch)
+            elif parsing_mode == PARSING_ARG_NAME:
                 if ch.isalpha() or ch == "_":
                     arg_name += ch
                 elif ch == "=":
-                    parsing_arg_name = False
-                    parsing_arg_value = True
+                    parsing_mode = PARSING_ARG_VALUE
                 elif ch == ",":
                     args[arg_name] = True
                     arg_name = ""
-                    parsing_arg_value = False
-                    parsing_arg_name = True
+                    parsing_mode = PARSING_ARG_NAME
                 else:
                     raise ZderadfileParseError(
                         f"Error parsing directive: argument name must be alphabetic or \"_\": {line}"
                     )
-            elif parsing_arg_value:
-                print("parsing arg value", ch)
+            elif parsing_mode == PARSING_ARG_VALUE:
                 if ch == ",":
                     args[arg_name] = arg_value
                     arg_name = ""
                     arg_value = ""
-                    parsing_arg_value = False
-                    parsing_arg_name = True
+                    parsing_mode = PARSING_ARG_NAME
                 else:
                     arg_value += ch
         if arg_name:
