@@ -53,3 +53,27 @@ def test_parse_directive_args():
             "option_b": "1234",
         },
     )
+
+
+def test_parse_directive_args_no_options():
+    assert zderad.parse_directive(
+        "  ^[include](test/file.py,abc 123 456,another_arg is here)"
+    ) == zderad.ZderadfileDirectiveParameters(
+        "include", ["test/file.py", "abc 123 456", "another_arg is here"], {}
+    )
+
+
+def test_parse_directive_option_escapes():
+    assert zderad.parse_directive(
+        "^[include,flag_a=abc\\,def\\,1234\\,bob\\,\\/\\,2](file.py)"
+    ) == zderad.ZderadfileDirectiveParameters(
+        "include", ["file.py"], {"flag_a": "abc,def,1234,bob,/,2"}
+    )
+
+
+def test_parse_directive_args_escapes():
+    assert zderad.parse_directive(
+        "^[include](test/file.py,abc\\,123\\,456,another_arg\\\\is\\\\here)"
+    ) == zderad.ZderadfileDirectiveParameters(
+        "include", ["test/file.py", "abc,123,456", "another_arg\\is\\here"], {}
+    )

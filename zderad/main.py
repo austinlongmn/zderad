@@ -47,7 +47,7 @@ class ZderadfileDirectiveParameters:
             + f"  {self.directive},\n"
             + f"  {self.args},\n"
             + f"  {self.options}\n"
-            + f")"
+            + ")"
         )
 
     def __repr__(self):
@@ -176,9 +176,9 @@ def parse_directive_args(args):
         if is_escaped:
             argument += ch
             is_escaped = False
-        if ch == "\\":
+        elif ch == "\\":
             is_escaped = True
-        if ch == ",":
+        elif ch == ",":
             result.append(argument)
             argument = ""
         else:
