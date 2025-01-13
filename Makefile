@@ -1,7 +1,7 @@
 build: test .venv/bin/zderad
 
-deploy: build
-	pipx install .
+install: build
+	pipx install . --force
 
 test: zderad/**/* tests/**/*
 	.venv/bin/flake8 --exit-zero zderad --exclude \*\*/__init__.py
