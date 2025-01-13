@@ -200,20 +200,21 @@ def main_loop(tmp_file, input_file, output_file):
     "Main loop to process the input file and create the output file."
     for line in input_file:
         # Match directives that look like this: ^[directive](path/to/file)
-        regex_match = re.match(r"^\s+\^\[(.+?)\]\((.+?)\)\s+$", line)
-        if regex_match:
-            # This is a Zderadfile directive.
-            directive = regex_match.group(1)
-            filename = regex_match.group(2)
+        if "^[" in line:
             try:
-                perform_directive(directive, filename, tmp_file)
+                directive = parse_directive(line)
+                perform_directive(
+                    directive.directive, directive.args[0], tmp_file
+                )
             except ZderadfileParseError as e:
                 print(
                     f"{Fore.RED}Error parsing directive: {e}{Style.RESET_ALL}"
                 )
+                return 1
         else:
             # This is a normal line.
             tmp_file.write(line)
+    return 0
 
 
 def main():
@@ -227,13 +228,15 @@ def main():
     args = parser.parse_args()
 
     tmp_filename = get_tmp_file()
+    result = 0
     try:
         with open(args.input_file, "r") as input_file, open(
             args.output_file, "w"
         ) as output_file, open(tmp_filename, "w") as tmp_file:
-            main_loop(tmp_file, input_file, output_file)
+            result = main_loop(tmp_file, input_file, output_file)
     finally:
         cleanup(tmp_filename)
+    exit(result)
 
 
 if __name__ == "__main__":

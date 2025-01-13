@@ -9,3 +9,5 @@ test: zderad/**/* tests/**/*
 
 .venv/bin/zderad: zderad/**/* setup.py
 	.venv/bin/pip3 install .
+
+.PHONY: test
