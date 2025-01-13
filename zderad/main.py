@@ -5,6 +5,7 @@ import os
 import tempfile
 import re
 import typing
+import shutil
 
 from colored import Fore, Style
 
@@ -20,6 +21,7 @@ def get_tmp_file():
 
 def cleanup(tmp_filename: str):
     "Removes the temporary directory and all files within it."
+    shutil.copy(tmp_filename, "debug/tmp_file.md")
     os.unlink(tmp_filename)
 
 
@@ -65,7 +67,12 @@ class ZderadfileDirective:
 
 class IncludeFileDirective(ZderadfileDirective):
     def perform(self, tmp_file: typing.TextIO):
-        print("include file: ", self.parameters.args[0])
+        for file in self.parameters.args:
+            with open(file, "r") as f:
+                tmp_file.write("```python\n")
+                for line in f:
+                    tmp_file.write(line)
+                tmp_file.write("```\n")
 
 
 directives = {"include": IncludeFileDirective}
@@ -217,9 +224,7 @@ def main_loop(
         if "^[" in line:
             try:
                 directive = parse_directive(line)
-                perform_directive(
-                    directive.directive, directive.args[0], tmp_file
-                )
+                perform_directive(directive, tmp_file)
             except ZderadfileParseError as e:
                 print(
                     f"{Fore.RED}Error parsing directive: {e}{Style.RESET_ALL}"
