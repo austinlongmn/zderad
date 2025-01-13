@@ -10,6 +10,7 @@ To install, first clone the GitHub Repo:
 
 ```bash
 git clone https://github.com/austinlongmn/zderad.git
+cd zderad
 ```
 
 Then, you can install the Python package.
