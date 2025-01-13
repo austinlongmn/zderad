@@ -4,6 +4,7 @@ import argparse
 import os
 import tempfile
 import re
+import typing
 
 from colored import Fore, Style
 
@@ -17,26 +18,15 @@ def get_tmp_file():
     return tempfile.mktemp()
 
 
-def cleanup(tmp_filename):
+def cleanup(tmp_filename: str):
     "Removes the temporary directory and all files within it."
     os.unlink(tmp_filename)
 
 
-def include_file(filename, tmp_file):
-    print("include file: ", filename)
-    pass
-
-
-def include_output_images(directory_name, tmp_file):
-    print("include output images: ", directory_name)
-    pass
-
-
-directives = {"include": include_file, "output_images": include_output_images}
-
-
 class ZderadfileDirectiveParameters:
-    def __init__(self, directive, args, options):
+    def __init__(
+        self, directive: str, args: list[str], options: dict[str, str]
+    ):
         self.directive = directive
         self.args = args
         self.options = options
@@ -61,6 +51,24 @@ class ZderadfileDirectiveParameters:
             and self.args == value.args
             and self.options == value.options
         )
+
+
+class ZderadfileDirective:
+    def __init__(self, parameters: ZderadfileDirectiveParameters):
+        self.parameters = parameters
+
+    def perform(self, tmp_file: typing.TextIO):
+        raise NotImplementedError(
+            "perform method must be implemented in subclass"
+        )
+
+
+class IncludeFileDirective(ZderadfileDirective):
+    def perform(self, tmp_file: typing.TextIO):
+        print("include file: ", self.parameters.args[0])
+
+
+directives = {"include": IncludeFileDirective}
 
 
 class ZderadfileParseError(Exception):
@@ -166,7 +174,7 @@ def parse_directive_options(
     return directive, options
 
 
-def parse_directive_args(args):
+def parse_directive_args(args: str):
     if args == "":
         return {}
     result = []
@@ -188,15 +196,21 @@ def parse_directive_args(args):
     return result
 
 
-def perform_directive(directive, filename, tmp_file):
+def perform_directive(
+    parameters: ZderadfileDirectiveParameters, tmp_file: typing.TextIO
+):
     "Perform the directive on the file and write it to the temporary file."
-    if directive in directives:
-        directives[directive](filename, tmp_file)
+    if parameters.directive in directives:
+        directives[parameters.directive](parameters).perform(tmp_file)
     else:
-        raise ValueError(f"Unknown directive: {directive}")
+        raise ValueError(f"Unknown directive: {parameters.directive}")
 
 
-def main_loop(tmp_file, input_file, output_file):
+def main_loop(
+    tmp_file: typing.TextIO,
+    input_file: typing.TextIO,
+    output_file: typing.TextIO,
+):
     "Main loop to process the input file and create the output file."
     for line in input_file:
         # Match directives that look like this: ^[directive](path/to/file)
@@ -224,7 +238,12 @@ def main():
     parser.add_argument(
         "-i", "--input-file", default="Zderadfile", help="The file to parse"
     )
-    parser.add_argument("output", help="The output file.")
+    parser.add_argument(
+        "-o",
+        "--output-file",
+        default="zderad/Program.docx",
+        help="The output file.",
+    )
     args = parser.parse_args()
 
     tmp_filename = get_tmp_file()
