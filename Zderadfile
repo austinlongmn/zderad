@@ -5,6 +5,10 @@ Here is the README:
 
 ^[include,markdown,decrease_headings=1](README.md)
 
+Here is the output:
+
+^[include_images](test_images/*.png)
+
 Here is the source code:
 
 ^[include,lang=python,include_filenames](zderad/*.py)

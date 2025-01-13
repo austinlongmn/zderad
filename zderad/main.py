@@ -91,15 +91,23 @@ class IncludeFileDirective(ZderadfileDirective):
                                 ("#" * decrease_headings) + r"\1",
                                 line,
                             )
-                            line = re.sub(
-                                r"#{6,}", "######", line
-                            )
+                            line = re.sub(r"#{6,}", "######", line)
                         tmp_file.write(line)
                     if not is_markdown:
                         tmp_file.write("```\n\n")
 
 
-directives = {"include": IncludeFileDirective}
+class IncludeOutputImagesDirective(ZderadfileDirective):
+    def perform(self, tmp_file: typing.TextIO):
+        for file_glob in self.parameters.args:
+            for file in glob.glob(file_glob):
+                tmp_file.write(f"![]({file})\n\n")
+
+
+directives = {
+    "include": IncludeFileDirective,
+    "include_images": IncludeOutputImagesDirective,
+}
 
 
 class ZderadfileParseError(Exception):
@@ -250,14 +258,12 @@ def main_loop(
                 directive = parse_directive(line)
                 perform_directive(directive, tmp_file)
             except ZderadfileParseError as e:
-                print(
-                    f"{Fore.RED}Error parsing directive: {e}{Style.RESET_ALL}"
-                )
+                print(f"{Fore.red}Error parsing directive: {e}{Style.reset}")
                 return 1
             except Exception as err:
                 print(
-                    f"{Fore.RED}Error performing directive: {err}"
-                    + f"{Style.RESET_ALL}"
+                    f"{Fore.red}Error performing directive: {err}"
+                    + f"{Style.reset}"
                 )
                 return 1
         else:
