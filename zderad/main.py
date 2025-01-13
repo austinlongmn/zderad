@@ -7,23 +7,13 @@ import re
 import typing
 import shutil
 import glob
+import subprocess
 
 from colored import Fore, Style
 
 # This program runs in a directory and creates a Microsoft word document
 # containing any pseudocode, python, or other code files in the directory for
 # coursework submission.
-
-
-def get_tmp_file():
-    "Creates and returns a temporary directory to store files."
-    return tempfile.mktemp()
-
-
-def cleanup(tmp_filename: str):
-    "Removes the temporary directory and all files within it."
-    shutil.copy(tmp_filename, "debug/tmp_file.md")
-    os.unlink(tmp_filename)
 
 
 class ZderadfileDirectiveParameters:
@@ -245,10 +235,9 @@ def perform_directive(
         raise ValueError(f"Unknown directive: {parameters.directive}")
 
 
-def main_loop(
+def generate_tmp_file(
     tmp_file: typing.TextIO,
     input_file: typing.TextIO,
-    output_file: typing.TextIO,
 ):
     "Main loop to process the input file and create the output file."
     for line in input_file:
@@ -272,6 +261,23 @@ def main_loop(
     return 0
 
 
+def pandoc_convert(input_file: str, output_file: str):
+    "Converts the input file to a Microsoft Word document."
+    return os.system(f"pandoc {input_file} -o {output_file}")
+
+
+def get_tmp_file():
+    "Creates and returns a temporary directory to store files."
+    return tempfile.mktemp()
+
+
+def cleanup(tmp_filename: str, keep_tmp_file=False):
+    "Removes the temporary directory and all files within it."
+    if keep_tmp_file:
+        shutil.copy(tmp_filename, "zderad_tmp.md")
+    os.unlink(tmp_filename)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Create a Microsoft Word document containing code files."
@@ -285,17 +291,39 @@ def main():
         default="zderad/Program.docx",
         help="The output file.",
     )
+    parser.add_argument(
+        "-D",
+        "--debug",
+        action="store_true",
+        help="Display debug information. Also saves the temporary file to"
+        + "zderad_tmp.md.",
+    )
     args = parser.parse_args()
 
     tmp_filename = get_tmp_file()
     result = 0
     try:
         with open(args.input_file, "r") as input_file, open(
-            args.output_file, "w"
-        ) as output_file, open(tmp_filename, "w") as tmp_file:
-            result = main_loop(tmp_file, input_file, output_file)
+            tmp_filename, "w"
+        ) as tmp_file:
+            result = generate_tmp_file(tmp_file, input_file)
+        if (
+            subprocess.run(
+                [
+                    "pandoc",
+                    "--from",
+                    "markdown",
+                    tmp_filename,
+                    "-o",
+                    args.output_file,
+                ]
+            ).returncode
+            != 0
+        ):
+            print(f"{Fore.red}Error converting to Word document{Style.reset}")
+            result = 1
     finally:
-        cleanup(tmp_filename)
+        cleanup(tmp_filename, args.debug)
     exit(result)
 
 

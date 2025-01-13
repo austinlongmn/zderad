@@ -11,4 +11,4 @@ Here is the output:
 
 Here is the source code:
 
-^[include,lang=python,include_filenames](zderad/*.py)
+^[include,lang=python,include_filenames](zderad/main.py)

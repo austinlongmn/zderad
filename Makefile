@@ -8,7 +8,7 @@ test: zderad/**/* tests/**/*
 	.venv/bin/pytest
 
 run: build
-	.venv/bin/zderad --output-file debug/output.docx
+	.venv/bin/zderad -D --output-file debug/output.docx
 
 .venv/bin/zderad: zderad/**/* setup.py
 	.venv/bin/pip3 install .
