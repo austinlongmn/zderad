@@ -1,5 +1,10 @@
 # Test Program
 
-This program does stuff. Here is the source code:
+This program does stuff.
+Here is the README:
 
-^[include](zderad/main.py)
+^[include,markdown,decrease_headings=1](README.md)
+
+Here is the source code:
+
+^[include,lang=python,include_filenames](zderad/*.py)

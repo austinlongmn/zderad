@@ -6,6 +6,7 @@ import tempfile
 import re
 import typing
 import shutil
+import glob
 
 from colored import Fore, Style
 
@@ -32,6 +33,9 @@ class ZderadfileDirectiveParameters:
         self.directive = directive
         self.args = args
         self.options = options
+
+    def get_flag(self, flag_name: str):
+        return self.options.get(flag_name, "false").upper() == "TRUE"
 
     def __str__(self):
         return (
@@ -67,12 +71,32 @@ class ZderadfileDirective:
 
 class IncludeFileDirective(ZderadfileDirective):
     def perform(self, tmp_file: typing.TextIO):
-        for file in self.parameters.args:
-            with open(file, "r") as f:
-                tmp_file.write("```python\n")
-                for line in f:
-                    tmp_file.write(line)
-                tmp_file.write("```\n")
+        is_markdown = self.parameters.get_flag("markdown")
+        decrease_headings = int(
+            self.parameters.options.get("decrease_headings", "0")
+        )
+        language = self.parameters.options.get("lang", "text")
+        include_filenames = self.parameters.get_flag("include_filenames")
+        for file_glob in self.parameters.args:
+            for file in glob.glob(file_glob):
+                with open(file, "r") as f:
+                    if include_filenames:
+                        tmp_file.write(f"`{file}`\n\n")
+                    if not is_markdown:
+                        tmp_file.write(f"```{language}\n")
+                    for line in f:
+                        if decrease_headings:
+                            line = re.sub(
+                                r"^(#+)",
+                                ("#" * decrease_headings) + r"\1",
+                                line,
+                            )
+                            line = re.sub(
+                                r"#{6,}", "######", line
+                            )
+                        tmp_file.write(line)
+                    if not is_markdown:
+                        tmp_file.write("```\n\n")
 
 
 directives = {"include": IncludeFileDirective}
@@ -156,7 +180,7 @@ def parse_directive_options(
             elif ch == "=":
                 parsing_mode = PARSING_OPTION_VALUE
             elif ch == ",":
-                options[option_name] = True
+                options[option_name] = "true"
                 option_name = ""
                 parsing_mode = PARSING_OPTION_NAME
             else:
@@ -177,7 +201,7 @@ def parse_directive_options(
             else:
                 option_value += ch
     if option_name:
-        options[option_name] = option_value if option_value != "" else True
+        options[option_name] = option_value if option_value != "" else "true"
     return directive, options
 
 
@@ -228,6 +252,12 @@ def main_loop(
             except ZderadfileParseError as e:
                 print(
                     f"{Fore.RED}Error parsing directive: {e}{Style.RESET_ALL}"
+                )
+                return 1
+            except Exception as err:
+                print(
+                    f"{Fore.RED}Error performing directive: {err}"
+                    + f"{Style.RESET_ALL}"
                 )
                 return 1
         else:

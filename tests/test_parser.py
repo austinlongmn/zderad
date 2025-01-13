@@ -19,7 +19,7 @@ def test_parse_directive_flags():
     assert zderad.parse_directive(
         "^[include,flag_a,flag_b](file.py)"
     ) == zderad.ZderadfileDirectiveParameters(
-        "include", ["file.py"], {"flag_a": True, "flag_b": True}
+        "include", ["file.py"], {"flag_a": "true", "flag_b": "true"}
     )
 
 
@@ -31,8 +31,8 @@ def test_parse_directive_options():
         "include",
         ["file.py"],
         {
-            "flag_a": True,
-            "flag_b": True,
+            "flag_a": "true",
+            "flag_b": "true",
             "option_a": "abc def 1234 bob / 2",
             "option_b": "1234",
         },
@@ -47,8 +47,8 @@ def test_parse_directive_args():
         "include",
         ["test/file.py", "abc 123 456", "another_arg is here"],
         {
-            "flag_a": True,
-            "flag_b": True,
+            "flag_a": "true",
+            "flag_b": "true",
             "option_a": "abc def 1234 bob / 2",
             "option_b": "1234",
         },
