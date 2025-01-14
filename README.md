@@ -4,12 +4,12 @@
 directories and puts them into a nicely formatted Microsoft Word document for
 Moodle submission.
 
-## ⚠️ WARNING ⚠️
+## WARNING
 
-Before using `zderad`, please make sure you know **NOT TO USE IT IN UNTRUSTED
-DIRECTORIES!** `zderad` has a powerful but dangerous feature that, when run with
-untrusted files, can enable arbitrary command execution on your computer. See
-the [`exec` directive](/docs/directives/exec.md) for more details.
+Before using `zderad`, please make sure you know not to use it with untrusted
+`Zderadfile`s. `zderad` has a powerful but dangerous feature that, when run with
+untrusted files, can cause arbitrary command execution on your computer. See the
+[`exec` directive](/docs/directives/exec.md) for more details.
 
 ## Installation
 
