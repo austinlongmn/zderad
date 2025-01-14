@@ -1,6 +1,7 @@
 export PATH := .venv/bin:$(PATH)
 
 build: test
+	pip3 install -e .
 
 install: build
 	pipx install . --force
@@ -11,9 +12,5 @@ test: zderad/**/* tests/**/*
 
 run: build
 	zderad -D --output-file debug/output.docx
-
-setup:
-	pip3 install setuptools pytest flake8
-	pip3 install -e .
 
 .PHONY: test
