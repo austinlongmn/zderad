@@ -1,16 +1,19 @@
-build: test .venv/bin/zderad
+export PATH := .venv/bin:$(PATH)
+
+build: test
 
 install: build
 	pipx install . --force
 
 test: zderad/**/* tests/**/*
-	.venv/bin/flake8 --exit-zero zderad --exclude \*\*/__init__.py
-	.venv/bin/pytest
+	flake8 --exit-zero zderad --exclude \*\*/__init__.py
+	pytest
 
 run: build
-	.venv/bin/zderad -D --output-file debug/output.docx
+	zderad -D --output-file debug/output.docx
 
-.venv/bin/zderad: zderad/**/* setup.py
-	.venv/bin/pip3 install .
+setup:
+	pip3 install setuptools pytest flake8
+	pip3 install -e .
 
 .PHONY: test
