@@ -5,9 +5,13 @@ Here is the README:
 
 ^[include,markdown,decrease_headings=1](README.md)
 
-Here is the output:
+Here are some images:
 
 ^[include_images](test_images/*.png)
+
+Here is some output:
+
+^[exec](cat requirements.txt)
 
 Here is the source code:
 

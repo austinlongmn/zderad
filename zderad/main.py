@@ -21,6 +21,7 @@ import zderad.directives as directives
 directives = {
     "include": directives.IncludeFileDirective,
     "include_images": directives.IncludeOutputImagesDirective,
+    "exec": directives.ExecDirective,
 }
 
 
