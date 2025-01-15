@@ -9,8 +9,7 @@ Moodle submission.
 ## WARNING
 
 Before using `zderad`, please make sure you know not to use it with untrusted
-`Zderadfile`s. `zderad` has a powerful but dangerous feature that, when run with
-untrusted files, can cause arbitrary command execution on your computer. See the
+`Zderadfile`s. Treat untrusted `Zderadfile`s like untrusted code. See the
 [`exec` directive](docs/directives/exec.md) for more details.
 
 ## Installation
