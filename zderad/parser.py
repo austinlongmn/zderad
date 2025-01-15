@@ -28,9 +28,7 @@ def parse_directive(line, raise_diagnostic=default_raise_diagnostic):
 
         args = parse_directive_args(args_str)
 
-        directive, options = parse_directive_options(
-            options_str, raise_diagnostic
-        )
+        directive, options = parse_directive_options(options_str, raise_diagnostic)
 
         return ZderadfileDirectiveParameters(directive, args, options)
     else:
@@ -43,9 +41,7 @@ def raise_diagnostic(message, file, line, line_number):
     )
 
 
-def parse_directive_options(
-    options_str, raise_diagnostic=default_raise_diagnostic_no_ln
-):
+def parse_directive_options(options_str, raise_diagnostic=default_raise_diagnostic_no_ln):
     PARSING_DIRECTIVE = 0
     PARSING_OPTION_NAME = 1
     PARSING_OPTION_VALUE = 2
@@ -85,9 +81,7 @@ def parse_directive_options(
                 option_name = ""
                 parsing_mode = PARSING_OPTION_NAME
             else:
-                raise_diagnostic(
-                    "Option name must contain only letters and '_'"
-                )
+                raise_diagnostic("Option name must contain only letters and '_'")
         elif parsing_mode == PARSING_OPTION_VALUE:
             if is_escaped:
                 option_value += ch

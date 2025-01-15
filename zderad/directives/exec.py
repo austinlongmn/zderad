@@ -22,9 +22,7 @@ class ExecDirective(ZderadfileDirective):
             stdout, _ = process.communicate()
             decoded = stdout.decode("utf-8")
         except Exception as e:
-            raise ZderadfileDirectiveExecutionError(
-                f"Error executing command: {e}"
-            )
+            raise ZderadfileDirectiveExecutionError(f"Error executing command: {e}")
         if include_command:
             tmp_file.write(f"`{command}`\n\n")
         tmp_file.write(f"```{language}\n")

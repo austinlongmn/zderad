@@ -23,14 +23,10 @@ import zderad.directives as directives
 # coursework submission.
 
 
-def perform_directive(
-    parameters: ZderadfileDirectiveParameters, tmp_file: typing.TextIO
-):
+def perform_directive(parameters: ZderadfileDirectiveParameters, tmp_file: typing.TextIO):
     "Perform the directive on the file and write it to the temporary file."
     if parameters.directive in directives.directives:
-        directives.directives[parameters.directive](parameters).perform(
-            tmp_file
-        )
+        directives.directives[parameters.directive](parameters).perform(tmp_file)
     else:
         raise ValueError(f"Unknown directive: {parameters.directive}")
 
@@ -107,9 +103,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Create a Microsoft Word document containing code files."
     )
-    parser.add_argument(
-        "-i", "--input-file", default="Zderadfile", help="The file to parse"
-    )
+    parser.add_argument("-i", "--input-file", default="Zderadfile", help="The file to parse")
     parser.add_argument(
         "-o",
         "--output-file",
@@ -120,17 +114,14 @@ def main():
         "-D",
         "--debug",
         action="store_true",
-        help="Display debug information. Also saves the temporary file to"
-        + "zderad_tmp.md.",
+        help="Display debug information. Also saves the temporary file to zderad_tmp.md.",
     )
     args = parser.parse_args()
 
     tmp_filename = get_tmp_file()
     result = 0
     try:
-        with open(args.input_file, "r") as input_file, open(
-            tmp_filename, "w"
-        ) as tmp_file:
+        with open(args.input_file, "r") as input_file, open(tmp_filename, "w") as tmp_file:
             result = generate_tmp_file(tmp_file, input_file)
 
         if args.output_file == "zderad/Program.docx":

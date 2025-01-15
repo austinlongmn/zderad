@@ -11,13 +11,9 @@ class IncludeFileDirective(ZderadfileDirective):
     def perform(self, tmp_file):
         is_markdown = self.parameters.get_flag("markdown")
         try:
-            decrease_headings = int(
-                self.parameters.options.get("decrease_headings", "0")
-            )
+            decrease_headings = int(self.parameters.options.get("decrease_headings", "0"))
         except ValueError:
-            raise ZderadfileDirectiveExecutionError(
-                "decrease_headings must be an integer"
-            )
+            raise ZderadfileDirectiveExecutionError("decrease_headings must be an integer")
         language = self.parameters.options.get("lang", "text")
         include_filenames = self.parameters.get_flag("include_filenames")
         for file_glob in self.parameters.args:
@@ -40,6 +36,4 @@ class IncludeFileDirective(ZderadfileDirective):
                         if not is_markdown:
                             tmp_file.write("```\n\n")
                 except OSError as e:
-                    raise ZderadfileDirectiveExecutionError(
-                        f"Error reading file {file}: {e}"
-                    )
+                    raise ZderadfileDirectiveExecutionError(f"Error reading file {file}: {e}")
