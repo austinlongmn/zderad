@@ -6,6 +6,7 @@ import tempfile
 import typing
 import shutil
 import subprocess
+import sys
 
 from colored import Fore, Style
 
@@ -73,6 +74,27 @@ def cleanup(tmp_filename: str, keep_tmp_file=False):
     os.unlink(tmp_filename)
 
 
+def convert_pandoc(tmp_filename, output_filename):
+    "Converts the temporary file to a Microsoft Word document."
+    try:
+        return subprocess.run(
+            [
+                "pandoc",
+                "--from",
+                "markdown",
+                tmp_filename,
+                "-o",
+                output_filename,
+            ]
+        ).returncode
+    except Exception as e:
+        print(
+            f"{Fore.red}Error converting to Word document: {e}{Style.reset}",
+            file=sys.stderr,
+        )
+        return 1
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Create a Microsoft Word document containing code files."
@@ -102,19 +124,17 @@ def main():
             tmp_filename, "w"
         ) as tmp_file:
             result = generate_tmp_file(tmp_file, input_file)
-        if (
-            subprocess.run(
-                [
-                    "pandoc",
-                    "--from",
-                    "markdown",
-                    tmp_filename,
-                    "-o",
-                    args.output_file,
-                ]
-            ).returncode
-            != 0
-        ):
+
+        if args.output_file == "zderad/Program.docx":
+            try:
+                os.mkdir("zderad")
+            except FileExistsError:
+                pass
+            except OSError as e:
+                print(f"{Fore.red}Error creating directory: {e}{Style.reset}")
+                result = 1
+
+        if convert_pandoc(tmp_filename, args.output_file):
             print(f"{Fore.red}Error converting to Word document{Style.reset}")
             result = 1
     finally:
