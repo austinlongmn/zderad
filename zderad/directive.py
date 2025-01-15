@@ -42,3 +42,7 @@ class ZderadfileDirective:
         raise NotImplementedError(
             "perform method must be implemented in subclass"
         )
+
+
+class ZderadfileDirectiveExecutionError(Exception):
+    pass
