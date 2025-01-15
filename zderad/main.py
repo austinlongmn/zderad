@@ -11,7 +11,11 @@ import sys
 from colored import Fore, Style
 
 from zderad.parser import parse_directive, ZderadfileParseError
-from zderad.directive import ZderadfileDirectiveParameters
+import traceback
+from zderad.directive import (
+    ZderadfileDirectiveParameters,
+    ZderadfileDirectiveExecutionError,
+)
 import zderad.directives as directives
 
 # This program runs in a directory and creates a Microsoft word document
@@ -45,11 +49,15 @@ def generate_tmp_file(
             except ZderadfileParseError as e:
                 print(f"{Fore.red}Error parsing directive: {e}{Style.reset}")
                 return 1
+            except ZderadfileDirectiveExecutionError as e:
+                print(f"{Fore.red}Error performing directive: {e}{Style.reset}")
+                return 1
             except Exception as err:
                 print(
-                    f"{Fore.red}Error performing directive: {err}"
-                    + f"{Style.reset}"
+                    f"{Fore.red}Unexpected error while parsing or performing "
+                    f"directive: {err}{Style.reset}"
                 )
+                traceback.print_exc()
                 return 1
         else:
             # This is a normal line.
