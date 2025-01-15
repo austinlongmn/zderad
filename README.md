@@ -4,6 +4,8 @@
 directories and puts them into a nicely formatted Microsoft Word document for
 Moodle submission.
 
+![A demonstration of an example run of zderad](/docs/demonstration.png)
+
 ## WARNING
 
 Before using `zderad`, please make sure you know not to use it with untrusted
