@@ -2,9 +2,7 @@ import typing
 
 
 class ZderadfileDirectiveParameters:
-    def __init__(
-        self, directive: str, args: list[str], options: dict[str, str]
-    ):
+    def __init__(self, directive: str, args: list[str], options: dict[str, str]):
         self.directive = directive
         self.args = args
         self.options = options
@@ -15,10 +13,10 @@ class ZderadfileDirectiveParameters:
     def __str__(self):
         return (
             "ZderadfileDirectiveParameters(\n"
-            + f"  {self.directive},\n"
-            + f"  {self.args},\n"
-            + f"  {self.options}\n"
-            + ")"
+            f"  {self.directive},\n"
+            f"  {self.args},\n"
+            f"  {self.options}\n"
+            ")"
         )
 
     def __repr__(self):
@@ -39,9 +37,7 @@ class ZderadfileDirective:
         self.parameters = parameters
 
     def perform(self, tmp_file: typing.TextIO):
-        raise NotImplementedError(
-            "perform method must be implemented in subclass"
-        )
+        raise NotImplementedError("perform method must be implemented in subclass")
 
 
 class ZderadfileDirectiveExecutionError(Exception):

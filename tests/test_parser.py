@@ -10,9 +10,7 @@ def test_parse_directive():
 def test_parse_directive_arg():
     assert parser.parse_directive(
         "^[output_images](path/to/directory)"
-    ) == parser.ZderadfileDirectiveParameters(
-        "output_images", ["path/to/directory"], {}
-    )
+    ) == parser.ZderadfileDirectiveParameters("output_images", ["path/to/directory"], {})
 
 
 def test_parse_directive_flags():
@@ -25,8 +23,7 @@ def test_parse_directive_flags():
 
 def test_parse_directive_options():
     assert parser.parse_directive(
-        "  ^[include,flag_a,option_a=abc def 1234 bob / 2,"
-        + "flag_b,option_b=1234](file.py)  "
+        "  ^[include,flag_a,option_a=abc def 1234 bob / 2,flag_b,option_b=1234](file.py)  "
     ) == parser.ZderadfileDirectiveParameters(
         "include",
         ["file.py"],
@@ -42,7 +39,7 @@ def test_parse_directive_options():
 def test_parse_directive_args():
     assert parser.parse_directive(
         "  ^[include,flag_a,option_a=abc def 1234 bob / 2,"
-        + "flag_b,option_b=1234](test/file.py,abc 123 456,another_arg is here)"
+        "flag_b,option_b=1234](test/file.py,abc 123 456,another_arg is here)"
     ) == parser.ZderadfileDirectiveParameters(
         "include",
         ["test/file.py", "abc 123 456", "another_arg is here"],
