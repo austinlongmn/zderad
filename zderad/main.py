@@ -18,19 +18,14 @@ import zderad.directives as directives
 # coursework submission.
 
 
-directives = {
-    "include": directives.IncludeFileDirective,
-    "include_images": directives.IncludeOutputImagesDirective,
-    "exec": directives.ExecDirective,
-}
-
-
 def perform_directive(
     parameters: ZderadfileDirectiveParameters, tmp_file: typing.TextIO
 ):
     "Perform the directive on the file and write it to the temporary file."
-    if parameters.directive in directives:
-        directives[parameters.directive](parameters).perform(tmp_file)
+    if parameters.directive in directives.directives:
+        directives.directives[parameters.directive](parameters).perform(
+            tmp_file
+        )
     else:
         raise ValueError(f"Unknown directive: {parameters.directive}")
 
@@ -124,7 +119,8 @@ def main():
             result = 1
     finally:
         cleanup(tmp_filename, args.debug)
-    exit(result)
+    if result:
+        exit(result)
 
 
 if __name__ == "__main__":
