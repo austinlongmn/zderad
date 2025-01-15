@@ -25,4 +25,4 @@ Zderadfiles do not yet support escaping the brackets or parentheses. (PRs are
 welcome!).
 
 You can find more information on the specific commands in the
-[/docs/directives](/docs/directives/) folder.
+[/docs/directives](/docs/directives/index.md) folder.
