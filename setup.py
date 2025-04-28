@@ -5,7 +5,7 @@ with open("README.md") as f:
 
 setup(
     name="zderad",
-    version="1.0",
+    version="1.0.1",
     description=(
         "A program to create a Microsoft Word document containing code files."
     ),

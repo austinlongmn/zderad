@@ -68,7 +68,7 @@ def pandoc_convert(input_file: str, output_file: str):
 
 def get_tmp_file():
     "Creates and returns a temporary directory to store files."
-    return tempfile.mktemp()
+    return tempfile.NamedTemporaryFile(delete=False).name
 
 
 def cleanup(tmp_filename: str, keep_tmp_file=False):
