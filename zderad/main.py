@@ -23,7 +23,9 @@ import zderad.directives as directives
 # coursework submission.
 
 
-def perform_directive(parameters: ZderadfileDirectiveParameters, tmp_file: typing.TextIO):
+def perform_directive(
+    parameters: ZderadfileDirectiveParameters, tmp_file: typing.TextIO
+):
     "Perform the directive on the file and write it to the temporary file."
     if parameters.directive in directives.directives:
         directives.directives[parameters.directive](parameters).perform(tmp_file)
@@ -61,11 +63,6 @@ def generate_tmp_file(
     return 0
 
 
-def pandoc_convert(input_file: str, output_file: str):
-    "Converts the input file to a Microsoft Word document."
-    return os.system(f"pandoc {input_file} -o {output_file}")
-
-
 def get_tmp_file():
     "Creates and returns a temporary directory to store files."
     return tempfile.NamedTemporaryFile(delete=False).name
@@ -86,6 +83,7 @@ def convert_pandoc(tmp_filename, output_filename):
                 "pandoc",
                 "--from",
                 "markdown",
+                "--syntax-highlighting=pygments",
                 tmp_filename,
                 "-o",
                 output_filename,
@@ -103,7 +101,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Create a Microsoft Word document containing code files."
     )
-    parser.add_argument("-i", "--input-file", default="Zderadfile", help="The file to parse")
+    parser.add_argument(
+        "-i", "--input-file", default="Zderadfile", help="The file to parse"
+    )
     parser.add_argument(
         "-o",
         "--output-file",
@@ -121,7 +121,10 @@ def main():
     tmp_filename = get_tmp_file()
     result = 0
     try:
-        with open(args.input_file, "r") as input_file, open(tmp_filename, "w") as tmp_file:
+        with (
+            open(args.input_file, "r") as input_file,
+            open(tmp_filename, "w") as tmp_file,
+        ):
             result = generate_tmp_file(tmp_file, input_file)
 
         if args.output_file == "zderad/Program.docx":
